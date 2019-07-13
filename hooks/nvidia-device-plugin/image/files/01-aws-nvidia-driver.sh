@@ -55,16 +55,10 @@ class_to_driver_checksum=( \
 #   Order in the arrays below matters
 # https://developer.nvidia.com/cuda-downloads
 cuda_files=( \
-  "https://developer.nvidia.com/compute/cuda/9.1/Prod/local_installers/cuda_9.1.85_387.26_linux" \
-  "https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/1/cuda_9.1.85.1_linux" \
-  "https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/2/cuda_9.1.85.2_linux" \
-  "https://developer.nvidia.com/compute/cuda/9.1/Prod/patches/3/cuda_9.1.85.3_linux" \
+  "https://developer.nvidia.com/compute/cuda/10.0/Prod/local_installers/cuda_10.0.130_410.48_linux" \
 )
 cuda_files_checksums=( \
-  "1540658f4fe657dddd8b0899555b7468727d4aa8" \
-  "7ec6970ecd81163b0d02ef30d35599e7fd6e97d8" \
-  "cfa3b029b58fc117d8ce510a70efc848924dd565" \
-  "6269a2c5784b08997edb97ea0020fb4e6c8769ed" \
+  "009cb0b6d3a81a97eb529e2301ff613e23c6edd3" \
 )
 
 containsElement () { for e in "${@:2}"; do [[ "$e" = "$1" ]] && return 0; done; return 1; }
@@ -73,7 +67,7 @@ containsElement () { for e in "${@:2}"; do [[ "$e" = "$1" ]] && return 0; done; 
 # Ensure that we are on a proper AWS GPU Instance
 
 apt-get -y update
-apt-get -y --no-upgrade install curl jq
+apt-get -y --no-upgrade install curl jq libxml2-dev 
 
 AWS_INSTANCE_TYPE=$(curl -m 2 -fsSL http://169.254.169.254/latest/dynamic/instance-identity/document | jq -r ".instanceType" || true) # eg: p2.micro
 AWS_INSTANCE_CLASS=$(echo $AWS_INSTANCE_TYPE | cut -d . -f 1 || true) # e.g. p2
@@ -110,7 +104,7 @@ apt-get -y autoremove
 # Unload open-source nouveau driver if it exists
 #   The nvidia drivers won't install otherwise
 #   "g3" instances in particular have this module auto-loaded
-modprobe -r nouveau || true
+modprobe -r nouveau || true 
 
 #################################################
 # Download and install the Nvidia drivers and cuda libraries
@@ -152,7 +146,7 @@ for (( i=0; i<${length}; i++ )); do
       touch $filepath_installed # Mark successful installation
     elif [[ $download =~ .*local_installers.*cuda.* ]]; then
       # Install the primary cuda library
-      $filepath --toolkit --silent --verbose
+      $filepath --toolkit --silent
       touch $filepath_installed # Mark successful installation
     elif [[ $download =~ .*patches.*cuda.* ]]; then
       # Install an update to the primary cuda library
